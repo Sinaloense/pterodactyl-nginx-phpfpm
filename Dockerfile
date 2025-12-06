@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     curl \
     unzip \
+    git \
     ca-certificates \
     apt-transport-https \
     && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
@@ -43,6 +44,11 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y --no-install-recommends php${PHP_VERSION}-memcache || true \
     && apt-get install -y --no-install-recommends php${PHP_VERSION}-memcached || true \
     && apt-get install -y --no-install-recommends php${PHP_VERSION}-opcache || true \
+    && wget -q -O /tmp/composer.phar https://getcomposer.org/download/latest-stable/composer.phar \
+    && SHA256=$(wget -q -O - https://getcomposer.org/download/latest-stable/composer.phar.sha256) \
+    && echo "$SHA256 /tmp/composer.phar" | sha256sum -c - \
+    && mv /tmp/composer.phar /usr/local/bin/composer \
+    && chmod +x /usr/local/bin/composer \
     && rm -rf /var/lib/apt/lists/* \
     && adduser --disabled-password --home /home/container container
 
