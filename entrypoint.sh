@@ -18,13 +18,21 @@ else
 fi
 
 # Run PHP-FPM
-php-fpm${PHP_VERSION} -c "$HOME/fpm/php.ini" --fpm-config "$HOME/fpm/php-fpm.conf" --daemonize \
-    || {
-        echo "ERROR: Failed to launch PHP-FPM."; exit 1;
-    }
+php-fpm${PHP_VERSION} -F -c "$HOME/fpm/php.ini" --fpm-config "$HOME/fpm/php-fpm.conf" &
+PHP_FPM_PID=$!
+
+# Run Nginx
+nginx -p "$HOME/nginx" -c "nginx.conf" -g "daemon off;" &
+NGINX_PID=$!
 
 MODIFIED_STARTUP=`eval echo $(echo ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')`
 echo ":$HOME$ ${MODIFIED_STARTUP}"
 
 # Run the Server
 ${MODIFIED_STARTUP}
+
+# Wait for any process to exit
+wait -n $PHP_FPM_PID $NGINX_PID
+
+echo "A main process exited, shutting container down"
+exit 1

@@ -8,6 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG PHP_VERSION=8.5
 
 RUN apt-get update && apt-get install -y \
+    tini \
     nginx \
     wget \
     curl \
@@ -62,4 +63,4 @@ ENV USER=container HOME=/home/container
 
 WORKDIR /home/container
 
-CMD ["/entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
