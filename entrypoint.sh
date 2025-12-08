@@ -5,17 +5,35 @@ nginx -v
 # Output Current PHP Version
 php -v
 
-# Install Composer
+# Install Composer dependencies and optimize laravel projects
 HTML_DIR="$HOME/html"
+success_count=0
+fail_count=0
 
-if [ -f "$HTML_DIR/composer.json" ]; then
-    echo "Verifying Composer dependencies..."
-    composer install --working-dir="$HTML_DIR" --no-interaction --ansi --no-dev --optimize-autoloader
+while read -r composer_file; do
+    composer_dir=$(dirname "$composer_file")
+    echo "=============================="
+    echo "Processing: $composer_dir"
 
-    php "$HTML_DIR/artisan" optimize
-else
-    echo "$HTML_DIR/composer.json not found."
-fi
+    if composer install --working-dir="$composer_dir" --no-interaction --ansi --no-dev --optimize-autoloader; then
+        echo "Composer install succeeded in $composer_dir"
+        ((success_count++))
+    else
+        echo "Composer install failed in $composer_dir"
+        ((fail_count++))
+        continue
+    fi
+
+    if [ -f "$composer_dir/artisan" ]; then
+        echo "Optimizing Laravel project: $composer_dir/artisan"
+        php "$composer_dir/artisan" optimize || echo "Artisan optimize failed: $composer_dir"
+    fi
+done < <(find "$HTML_DIR" -maxdepth 2 -type f -name "composer.json")
+
+echo "=============================="
+echo "Composer processed successfully: $success_count"
+echo "Composer failed: $fail_count"
+echo "=============================="
 
 # Run PHP-FPM
 php-fpm${PHP_VERSION} -F -c "$HOME/fpm/php.ini" --fpm-config "$HOME/fpm/php-fpm.conf" &
