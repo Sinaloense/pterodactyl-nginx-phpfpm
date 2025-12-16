@@ -36,7 +36,7 @@ echo "Composer failed: $fail_count"
 echo "=============================="
 
 # Run PHP-FPM
-php-fpm${PHP_VERSION} -F -c "$HOME/fpm/php.ini" --fpm-config "$HOME/fpm/php-fpm.conf" &
+php-fpm${PHP_VERSION} -F --fpm-config "$HOME/fpm/php-fpm.conf" &
 PHP_FPM_PID=$!
 
 # Run Nginx
