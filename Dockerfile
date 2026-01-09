@@ -1,5 +1,4 @@
-FROM debian@sha256:b4aa902587c2e61ce789849cb54c332b0400fe27b1ee33af4669e1f7e7c3e22f
-#FROM debian:bookworm-slim
+FROM debian:bookworm-slim
 
 LABEL maintainer="Manuel Martinez <sina@serverscstrike.com>"
 
