@@ -1,49 +1,16 @@
-FROM debian:bookworm-slim
+FROM php:8.5-fpm-bookworm
 
 LABEL maintainer="Manuel Martinez <sina@serverscstrike.com>"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG PHP_VERSION=8.5
-
-RUN apt-get update && apt-get install -y \
-    tini \
-    nginx \
-    wget \
-    curl \
-    unzip \
-    git \
-    ca-certificates \
-    apt-transport-https \
-    && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
-    && echo "deb https://packages.sury.org/php/ bookworm main" > /etc/apt/sources.list.d/php.list \
-    && apt-get update && apt-get install -y --no-install-recommends \
-    php${PHP_VERSION} \
-    php${PHP_VERSION}-fpm \
-    php${PHP_VERSION}-cli \
-    php${PHP_VERSION}-common \
-    php${PHP_VERSION}-mysqlnd \
-    php${PHP_VERSION}-pdo \
-    php${PHP_VERSION}-xml \
-    php${PHP_VERSION}-bcmath \
-    php${PHP_VERSION}-curl \
-    php${PHP_VERSION}-dom \
-    php${PHP_VERSION}-mbstring \
-    php${PHP_VERSION}-gd \
-    php${PHP_VERSION}-gmp \
-    php${PHP_VERSION}-intl \
-    php${PHP_VERSION}-mongodb \
-    php${PHP_VERSION}-mysqli \
-    php${PHP_VERSION}-pgsql \
-    php${PHP_VERSION}-phar \
-    php${PHP_VERSION}-soap \
-    php${PHP_VERSION}-sockets \
-    php${PHP_VERSION}-sqlite3 \
-    php${PHP_VERSION}-zip \
-    php${PHP_VERSION}-maxminddb \
-    && apt-get install -y --no-install-recommends php${PHP_VERSION}-memcache || true \
-    && apt-get install -y --no-install-recommends php${PHP_VERSION}-memcached || true \
-    && apt-get install -y --no-install-recommends php${PHP_VERSION}-opcache || true \
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    tini nginx wget zip unzip git jpegoptim optipng pngquant gifsicle libavif-bin ghostscript \
+    && curl -fsSL -o /usr/local/bin/install-php-extensions https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions \
+    && chmod +x /usr/local/bin/install-php-extensions \
+    && install-php-extensions bcmath exif gd gmp imagick intl maxminddb memcached mongodb mysqli pdo_mysql pgsql soap sockets zip \
+    && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get install -y nodejs && npm install -g svgo \
     && wget -q -O /tmp/composer.phar https://getcomposer.org/download/latest-stable/composer.phar \
     && SHA256=$(wget -q -O - https://getcomposer.org/download/latest-stable/composer.phar.sha256) \
     && echo "$SHA256 /tmp/composer.phar" | sha256sum -c - \
@@ -52,7 +19,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && adduser --disabled-password --home /home/container container
 
-ENV PHP_INI_SCAN_DIR=/etc/php/${PHP_VERSION}/fpm/conf.d:/home/container/fpm/conf.d
+ENV PHP_INI_SCAN_DIR=/usr/local/etc/php/conf.d:/home/container/fpm/conf.d
 
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

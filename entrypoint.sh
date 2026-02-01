@@ -2,8 +2,8 @@
 # Output Current Nginx Version
 nginx -v
 
-# Output Current PHP Version
-php -v
+# Output Current PHP-FPM Version
+php-fpm -v
 
 # Install Composer dependencies and optimize laravel projects
 HTML_DIR="$HOME/html"
@@ -36,7 +36,7 @@ echo "Composer failed: $fail_count"
 echo "=============================="
 
 # Run PHP-FPM
-php-fpm${PHP_VERSION} -F --fpm-config "$HOME/fpm/php-fpm.conf" &
+php-fpm -F --fpm-config "$HOME/fpm/php-fpm.conf" &
 PHP_FPM_PID=$!
 
 # Run Nginx

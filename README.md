@@ -5,10 +5,10 @@ This repository provides what is needed to run Nginx as part of a Pterodactyl se
 
 ## Repository contents
 
-- Dockerfile — Image with Nginx, PHP-FPM, and required scripts.
-- entrypoint.sh — Startup script.
-- egg-nginx--p-h-p--f-p-m.json — Egg to use in Pterodactyl.
-- logrotate.d — Log rotation configuration for Nginx.
+- `Dockerfile` — Image with Nginx, PHP-FPM, and required scripts.
+- `entrypoint.sh` — Startup script.
+- `egg-nginx--p-h-p--f-p-m.json` — Egg to use in Pterodactyl.
+- `logrotate.d` — Log rotation configuration for Nginx.
 
 ## Features
 
@@ -16,9 +16,10 @@ This repository provides what is needed to run Nginx as part of a Pterodactyl se
 - Automatic Composer installations when starting your server.
 - Integrated `set_real_ip_from`.
 - Integrated `limit_req`.
+- Integrado `Spatie media library optimization tools`.
 - Automatic log rotation.
-- Nginx version: nginx/1.22.1.
-- Supported PHP versions: 8.3.29, 8.4.16, 8.5.1.
+- Nginx version: `nginx/1.22.1`.
+- PHP versions: `8.3.30, 8.4.17, 8.5.2`.
 
 ## Requirements
 

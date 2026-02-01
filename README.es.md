@@ -5,20 +5,21 @@ Este repositorio provee lo necesario para correr Nginx como parte de un servidor
 
 ## Contenido del repositorio:
 
-- Dockerfile — Imagen con Nginx, PHP-FPM y scripts necesarios.
-- entrypoint.sh — Script de arranque.
-- egg-nginx--p-h-p--f-p-m.json — Egg para usar en Pterodactyl.
-- logrotate.d — Configuración de rotación de logs para Nginx.
+- `Dockerfile` — Imagen con Nginx, PHP-FPM y scripts necesarios.
+- `entrypoint.sh` — Script de arranque.
+- `egg-nginx--p-h-p--f-p-m.json` — Egg para usar en Pterodactyl.
+- `logrotate.d` — Configuración de rotación de logs para Nginx.
 
 ## Características
 
 - Integración de Nginx directamente desde un servidor administrado por Pterodactyl.
 - Instalaciones Composer automaticas al momento de iniciar tu servidor.
-- set_real_ip_from integrado.
-- limit_req integrado.
+- `set_real_ip_from` integrado.
+- `limit_req` integrado.
+- `Spatie media library optimization tools` integrado.
 - Logs rotados automáticamente.
-- Versión de Nginx: nginx/1.22.1.
-- Versiónes de PHP: 8.3.29, 8.4.16, 8.5.1.
+- Versión de Nginx: `nginx/1.22.1`.
+- Versiónes de PHP: `8.3.30, 8.4.17, 8.5.2`.
 
 ## Requisitos:
 
@@ -26,9 +27,9 @@ Este repositorio provee lo necesario para correr Nginx como parte de un servidor
 
 ## Instalación:
 
-- Carga egg-nginx--p-h-p--f-p-m.json en tu panel.
-- Subir archivo [pterodactyl-nginx](https://github.com/Sinaloense/pterodactyl-nginx/blob/main/logrotate.d/pterodactyl-nginx) en el directorio /etc/logrotate.d/ de tu host principal.
-- Subir archivo [pterodactyl-phpfpm](https://github.com/Sinaloense/pterodactyl-phpfpm/blob/main/logrotate.d/pterodactyl-phpfpm) en el directorio /etc/logrotate.d/ de tu host principal.
+- Carga `egg-nginx--p-h-p--f-p-m.json` en tu panel.
+- Subir archivo [pterodactyl-nginx](https://github.com/Sinaloense/pterodactyl-nginx/blob/main/logrotate.d/pterodactyl-nginx) en el directorio `/etc/logrotate.d/` de tu host principal.
+- Subir archivo [pterodactyl-phpfpm](https://github.com/Sinaloense/pterodactyl-phpfpm/blob/main/logrotate.d/pterodactyl-phpfpm) en el directorio `/etc/logrotate.d/` de tu host principal.
 
 ## Recomendado usarse en conjunto con:
 - [Pterodactyl Cloudflared.](https://github.com/Sinaloense/pterodactyl-cloudflared)
