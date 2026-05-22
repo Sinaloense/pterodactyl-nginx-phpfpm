@@ -1,0 +1,47 @@
+name: Build & Push PHP ${{ matrix.php_version }}
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        include:
+          - php_version: 8.3.31
+            tags: |
+              8.3.31
+              8.3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build image
+        run: |
+          TAG_ARGS=""
+
+          while read tag; do
+            TAG_ARGS="$TAG_ARGS -t ghcr.io/sinaloense/pterodactyl-nginx-phpfpm:$tag"
+          done <<< "${{ matrix.tags }}"
+
+          docker build \
+            --platform linux/amd64 \
+            --build-arg PHP_VERSION="${{ matrix.php_version }}" \
+            $TAG_ARGS \
+            .
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push image
+        run: |
+          while read tag; do
+            docker push ghcr.io/sinaloense/pterodactyl-nginx-phpfpm:$tag
+          done <<< "${{ matrix.tags }}"

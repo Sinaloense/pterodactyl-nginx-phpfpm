@@ -1,4 +1,6 @@
-FROM php:8.5-fpm-bookworm
+ARG PHP_VERSION=8.5
+
+FROM php:${PHP_VERSION}-fpm-trixie
 
 LABEL maintainer="Manuel Martinez <sina@serverscstrike.com>"
 
