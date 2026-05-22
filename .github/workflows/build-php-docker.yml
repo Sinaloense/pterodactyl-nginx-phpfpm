@@ -26,11 +26,13 @@ jobs:
 
       - name: Build image
         run: |
-          TAG_ARGS=""
+          set -e
 
-          while read tag; do
-            TAG_ARGS="$TAG_ARGS -t ghcr.io/sinaloense/pterodactyl-nginx-phpfpm:$tag"
-          done <<< "${{ matrix.tags }}"
+          TAG_ARGS=$(printf "%s\n" "${{ matrix.tags }}" \
+            | sed "s|^|-t ghcr.io/sinaloense/pterodactyl-nginx-phpfpm:|")
+
+          echo "Tags:"
+          echo "$TAG_ARGS"
 
           docker build \
             --platform linux/amd64 \
@@ -43,6 +45,6 @@ jobs:
 
       - name: Push image
         run: |
-          while read tag; do
+          while IFS= read -r tag; do
             docker push ghcr.io/sinaloense/pterodactyl-nginx-phpfpm:$tag
           done <<< "${{ matrix.tags }}"
