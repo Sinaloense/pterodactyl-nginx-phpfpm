@@ -18,8 +18,8 @@ Este repositorio provee lo necesario para correr Nginx como parte de un servidor
 - `limit_req` integrado.
 - `Spatie media library optimization tools` integrado.
 - Logs rotados automáticamente.
-- Versión de Nginx: `nginx/1.22.1`.
-- Versiónes de PHP: `8.3.30, 8.4.19, 8.5.4`.
+- Versión de Nginx: `nginx/1.26.3`.
+- Versiónes de PHP: `8.5.6, 8.4.21, 8.3.31`.
 
 ## Requisitos:
 
