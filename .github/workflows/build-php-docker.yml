@@ -15,6 +15,16 @@ jobs:
     strategy:
       matrix:
         include:
+          - php_version: 8.5.6
+            tags: |
+              8.5.6
+              8.5
+
+          - php_version: 8.4.21
+            tags: |
+              8.4.21
+              8.4
+
           - php_version: 8.3.31
             tags: |
               8.3.31
