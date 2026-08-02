@@ -19,7 +19,7 @@ This repository provides what is needed to run Nginx as part of a Pterodactyl se
 - Integrated `Spatie media library optimization tools`.
 - Automatic log rotation.
 - Nginx version: `nginx/1.26.3`.
-- PHP versions: `8.5.8, 8.4.23, 8.3.32`.
+- PHP versions: `8.5.9, 8.4.24, 8.3.33`.
 
 ## Requirements
 

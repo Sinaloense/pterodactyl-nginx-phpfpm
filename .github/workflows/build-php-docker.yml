@@ -15,19 +15,19 @@ jobs:
     strategy:
       matrix:
         include:
-          - php_version: 8.5.8
+          - php_version: 8.5.9
             tags: |
-              8.5.8
+              8.5.9
               8.5
 
-          - php_version: 8.4.23
+          - php_version: 8.4.24
             tags: |
-              8.4.23
+              8.4.24
               8.4
 
-          - php_version: 8.3.32
+          - php_version: 8.3.33
             tags: |
-              8.3.32
+              8.3.33
               8.3
 
     steps:
