@@ -1,6 +1,6 @@
-ARG PHP_VERSION=8.5
+ARG PHP_VERSION=7.4
 
-FROM php:${PHP_VERSION}-fpm-trixie
+FROM php:${PHP_VERSION}-fpm-bullseye
 
 LABEL maintainer="Manuel Martinez <sina@serverscstrike.com>"
 
@@ -11,10 +11,10 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     && curl -fsSL -o /usr/local/bin/install-php-extensions https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions \
     && chmod +x /usr/local/bin/install-php-extensions \
     && install-php-extensions bcmath exif gd gmp imagick intl maxminddb memcached mongodb mysqli pdo_mysql pgsql soap sockets zip \
-    && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs && npm install -g svgo \
-    && wget -q -O /tmp/composer.phar https://getcomposer.org/download/latest-stable/composer.phar \
-    && SHA256=$(wget -q -O - https://getcomposer.org/download/latest-stable/composer.phar.sha256) \
+    && wget -q -O /tmp/composer.phar https://getcomposer.org/download/latest-2.x/composer.phar \
+    && SHA256=$(wget -q -O - https://getcomposer.org/download/latest-2.x/composer.phar.sha256) \
     && echo "$SHA256 /tmp/composer.phar" | sha256sum -c - \
     && mv /tmp/composer.phar /usr/local/bin/composer \
     && chmod +x /usr/local/bin/composer \
