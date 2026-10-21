@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     tini nginx wget zip unzip git jpegoptim optipng pngquant gifsicle libavif-bin ghostscript \
     && curl -fsSL -o /usr/local/bin/install-php-extensions https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions \
     && chmod +x /usr/local/bin/install-php-extensions \
-    && install-php-extensions bcmath exif gd gmp imagick intl maxminddb memcached mongodb mysqli pdo_mysql pgsql soap sockets zip \
+    && install-php-extensions bcmath exif gd gmp imagick/imagick@3.8.1 intl maxminddb memcached mongodb mysqli pdo_mysql pgsql soap sockets zip \
     && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get install -y nodejs && npm install -g svgo \
     && wget -q -O /tmp/composer.phar https://getcomposer.org/download/latest-stable/composer.phar \
