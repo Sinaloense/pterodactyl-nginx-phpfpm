@@ -1,11 +1,136 @@
 name: Build & Push PHP
 
 on:
+  schedule:
+    - cron: '0 10 * * *'
+
   workflow_dispatch:
+    inputs:
+      php_version:
+        description: 'PHP versions to build, separated by commas or spaces (e.g. "7.4 or "7.4.33"; leave empty for all)'
+        required: false
+        default: ''
+      force:
+        description: 'Force build even if version already exists in GHCR'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  IMAGE_REPO: ghcr.io/sinaloense/pterodactyl-nginx-phpfpm
+  PHP_SERIES: "7.4"
 
 jobs:
+  prepare:
+    name: Check versions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    outputs:
+      has_builds: ${{ steps.check.outputs.has_builds }}
+      matrix: ${{ steps.check.outputs.matrix }}
+
+    steps:
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Resolve versions & check GHCR
+        id: check
+        run: |
+          set -e
+          INPUT_VERSION="${{ github.event.inputs.php_version }}"
+          FORCE="${{ github.event.inputs.force }}"
+          VARIANT="fpm-trixie"
+
+          TARGETS=()
+
+          # Fetch upstream official images manifest
+          UPSTREAM_RAW=$(curl -s "https://raw.githubusercontent.com/docker-library/official-images/master/library/php" || true)
+
+          for SERIES in $PHP_SERIES; do
+            TARGET_EXPLICIT_VERSION=""
+
+            # 1. Filter by manual input if specified
+            if [ -n "$INPUT_VERSION" ]; then
+              MATCH=false
+              for item in $(echo "$INPUT_VERSION" | tr ',' ' '); do
+                clean_item=$(echo "$item" | sed 's/^php-//; s/^v//')
+                if [ "$clean_item" = "$SERIES" ]; then
+                  MATCH=true
+                  break
+                elif [[ "$clean_item" == "$SERIES."* ]]; then
+                  MATCH=true
+                  TARGET_EXPLICIT_VERSION="$clean_item"
+                  break
+                fi
+              done
+
+              if [ "$MATCH" != "true" ]; then
+                echo "[$SERIES] Skipped (not in requested input list)."
+                continue
+              fi
+            fi
+
+            # 2. Determine target version to build
+            if [ -n "$TARGET_EXPLICIT_VERSION" ]; then
+              VERSION="$TARGET_EXPLICIT_VERSION"
+              echo "[$SERIES] Using explicitly requested version: $VERSION"
+            else
+              echo "[$SERIES] Searching latest upstream patch version ($VARIANT)..."
+              VERSION=$(echo "$UPSTREAM_RAW" \
+                | grep -oE "\b${SERIES}\.[0-9]+-${VARIANT}\b" \
+                | sed "s/-${VARIANT}//" \
+                | sort -V \
+                | tail -n 1 || true)
+
+              # Fallback: Docker Hub API
+              if [ -z "$VERSION" ]; then
+                VERSION=$(curl -s "https://hub.docker.com/v2/repositories/library/php/tags?name=${SERIES}.&page_size=100" \
+                  | jq -r '.results[].name // empty' \
+                  | grep -oE "^${SERIES}\.[0-9]+-${VARIANT}$" \
+                  | sed "s/-${VARIANT}//" \
+                  | sort -V \
+                  | tail -n 1 || true)
+              fi
+
+              if [ -z "$VERSION" ]; then
+                echo "::warning::Could not find a valid upstream php:${SERIES}.x-${VARIANT} image."
+                continue
+              fi
+              echo "[$SERIES] Latest upstream version found: $VERSION"
+            fi
+
+            # 3. Check if image already exists in GHCR
+            IMAGE="$IMAGE_REPO:$VERSION"
+            if [ "$FORCE" = "true" ]; then
+              echo "[$SERIES] Forcing build as requested for version $VERSION."
+              TARGETS+=("{\"series\":\"$SERIES\",\"version\":\"$VERSION\"}")
+            elif docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
+              echo "[$SERIES] Image $IMAGE already exists in GHCR. Skipping build."
+            else
+              echo "[$SERIES] New version detected ($IMAGE does not exist in GHCR). Queuing build for $VERSION..."
+              TARGETS+=("{\"series\":\"$SERIES\",\"version\":\"$VERSION\"}")
+            fi
+          done
+
+          if [ ${#TARGETS[@]} -eq 0 ]; then
+            echo "No images need to be built. All versions are up to date."
+            echo "has_builds=false" >> $GITHUB_OUTPUT
+            echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+          else
+            JSON_MATRIX=$(printf '%s\n' "${TARGETS[@]}" | jq -s -c '{include: .}')
+            echo "Queued builds: $JSON_MATRIX"
+            echo "has_builds=true" >> $GITHUB_OUTPUT
+            echo "matrix=$JSON_MATRIX" >> $GITHUB_OUTPUT
+          fi
+
   build:
-    name: Build & Push PHP ${{ matrix.php_version }}
+    name: Build & Push PHP ${{ matrix.version }}
+    needs: prepare
+    if: needs.prepare.outputs.has_builds == 'true'
     runs-on: ubuntu-latest
 
     permissions:
@@ -13,46 +138,31 @@ jobs:
       packages: write
 
     strategy:
-      matrix:
-        include:
-          - php_version: 7.4.33
-            tags: |
-              7.4.33
-              7.4
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Build image
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build & Push Docker image
         run: |
           set -e
+          VERSION="${{ matrix.version }}"
+          SERIES="${{ matrix.series }}"
 
-          TAG_ARGS=""
-
-          while IFS= read -r tag; do
-            tag=$(echo "$tag" | xargs)
-
-            [ -z "$tag" ] && continue
-
-            TAG_ARGS="$TAG_ARGS -t ghcr.io/sinaloense/pterodactyl-nginx-phpfpm:$tag"
-          done <<< "${{ matrix.tags }}"
-
+          echo "Building image for PHP $VERSION (series $SERIES)..."
           docker build \
             --platform linux/amd64 \
-            --build-arg PHP_VERSION="${{ matrix.php_version }}" \
-            $TAG_ARGS \
+            --build-arg PHP_VERSION="$VERSION" \
+            -t "$IMAGE_REPO:$VERSION" \
+            -t "$IMAGE_REPO:$SERIES" \
             .
 
-      - name: Login to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Push image
-        run: |
-          while IFS= read -r tag; do
-            tag=$(echo "$tag" | xargs)
-
-            [ -z "$tag" ] && continue
-
-            docker push ghcr.io/sinaloense/pterodactyl-nginx-phpfpm:$tag
-          done <<< "${{ matrix.tags }}"
+          echo "Pushing tags to GHCR..."
+          docker push "$IMAGE_REPO:$VERSION"
+          docker push "$IMAGE_REPO:$SERIES"
