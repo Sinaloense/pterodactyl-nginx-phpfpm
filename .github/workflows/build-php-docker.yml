@@ -16,6 +16,9 @@ on:
         type: boolean
         default: false
 
+env:
+  IMAGE_REPO: ghcr.io/sinaloense/pterodactyl-nginx-phpfpm
+
 jobs:
   build:
     name: Build & Push PHP ${{ matrix.php_series }}
@@ -48,7 +51,6 @@ jobs:
           SERIES="${{ matrix.php_series }}"
           INPUT_VERSION="${{ github.event.inputs.php_version }}"
           FORCE="${{ github.event.inputs.force }}"
-          REPO="ghcr.io/sinaloense/pterodactyl-nginx-phpfpm"
           VARIANT="fpm-trixie"
 
           TARGET_EXPLICIT_VERSION=""
@@ -109,7 +111,7 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
           # 3. Check if image already exists in GHCR
-          IMAGE="$REPO:$VERSION"
+          IMAGE="$IMAGE_REPO:$VERSION"
           if [ "$FORCE" = "true" ]; then
             echo "Forcing build as requested."
             echo "should_build=true" >> $GITHUB_OUTPUT
@@ -127,16 +129,15 @@ jobs:
           set -e
           VERSION="${{ steps.check_version.outputs.version }}"
           SERIES="${{ matrix.php_series }}"
-          REPO="ghcr.io/sinaloense/pterodactyl-nginx-phpfpm"
 
           echo "Building image for PHP $VERSION (series $SERIES)..."
           docker build \
             --platform linux/amd64 \
             --build-arg PHP_VERSION="$VERSION" \
-            -t "$REPO:$VERSION" \
-            -t "$REPO:$SERIES" \
+            -t "$IMAGE_REPO:$VERSION" \
+            -t "$IMAGE_REPO:$SERIES" \
             .
 
           echo "Pushing tags to GHCR..."
-          docker push "$REPO:$VERSION"
-          docker push "$REPO:$SERIES"
+          docker push "$IMAGE_REPO:$VERSION"
+          docker push "$IMAGE_REPO:$SERIES"
