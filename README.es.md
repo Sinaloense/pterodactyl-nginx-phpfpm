@@ -19,7 +19,7 @@ Este repositorio provee lo necesario para correr Nginx como parte de un servidor
 - `Spatie media library optimization tools` integrado.
 - Logs rotados automáticamente.
 - Versión de Nginx: `nginx/1.18`.
-- Versiónes de PHP: `7.4 https://github.com/remicollet/php-src-security/commits/PHP-7.4-security-backports`.
+- Versiónes de PHP: `7.4.33 https://github.com/remicollet/php-src-security/commit/34a45b97de556bf436ed41b9ae2e10004973b339`.
 
 ## Requisitos:
 
