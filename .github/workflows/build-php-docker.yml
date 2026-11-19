@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       php_version:
-        description: 'PHP versions to build, separated by commas or spaces (e.g. "8.4, 8.3" or "8.4.28"; leave empty for all)'
+        description: 'PHP versions to build, separated by commas or spaces (e.g. "8.5, 8.4" or "8.5.12"; leave empty for all)'
         required: false
         default: ''
       force:
